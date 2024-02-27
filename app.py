@@ -1,3 +1,4 @@
+import io
 import streamlit as st
 import pandas as pd
 import duckdb
@@ -14,23 +15,42 @@ option = st.selectbox(
 
 st.write(f"You selected : {option}")
 
-data = {"a": [1, 2, 3],
-        "b": [4, 5, 6]}
-df = pd.DataFrame(data)
+csv = '''
+beverage,price
+orange juice, 2.5
+Expresso,2
+Tea,3
+'''
+beverages = pd.read_csv(io.StringIO(csv))
 
-tab1, tab2, tab3 = st.tabs(["Cat", "Dog", "Owl"])
+csv2 = '''
+food_item,food_price
+cookie,2.5
+chocolatine,2
+muffin,3
+'''
+food_items = pd.read_csv(io.StringIO(csv2))
 
-with tab1:
-    st.dataframe(df)
-    sql_query = st.text_area(label="Entrez votre input")
-    st.write(f"Vous avez entré la requête suivante : {sql_query}")
-    result = duckdb.query(sql_query).df()
-    st.dataframe(result)
+answer = """
+SELECT * FROM beverages
+CROSS JOIN food_items
+"""
+
+solution = duckdb.query(answer).df()
+
+st.header("enter your code:")
+query = st.text_area(label = "Here your SQL code")
+st.dataframe(duckdb.query(query).df())
+
+tab2, tab3 = st.tabs(["Tables", "Solution"])
 
 with tab2:
-    st.header("A dog")
-    st.image("https://static.streamlit.io/examples/dog.jpg", width=200)
+    st.write("table: beverages")
+    st.dataframe(beverages)
+    st.write("table: food_items")
+    st.dataframe(food_items)
+    st.write("expected :")
+    st.dataframe(solution)
 
 with tab3:
-    st.header("A owl")
-    st.image("https://static.streamlit.io/examples/owl.jpg", width=200)
+    st.write(answer)
