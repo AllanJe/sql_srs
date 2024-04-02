@@ -37,7 +37,7 @@ query = st.text_area(label="Here your SQL code")
 if query:
     result = con.execute(query).df()
     st.dataframe(result)
-#if query:
+# if query:
 #    result = duckdb.query(query).df()
 #    st.dataframe(result)
 #
