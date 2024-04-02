@@ -1,8 +1,10 @@
 import contextlib
 import io
 import pandas as pd
+import ast
 import duckdb
 import streamlit as st
+
 con = duckdb.connect(database="data/exercices_sql_tables.duckdb", read_only=False)
 st.write(
     """
@@ -31,7 +33,11 @@ with st.sidebar:
 st.header("enter your code:")
 query = st.text_area(label="Here your SQL code")
 
-# if query:
+
+if query:
+    result = con.execute(query).df()
+    st.dataframe(result)
+#if query:
 #    result = duckdb.query(query).df()
 #    st.dataframe(result)
 #
@@ -48,15 +54,22 @@ query = st.text_area(label="Here your SQL code")
 #    except KeyError:
 #        st.write("Some colmuns are missing")
 #
-# tab2, tab3 = st.tabs(["Tables", "Solution"])
-#
-# with tab2:
-#    st.write("table: beverages")
-#    st.dataframe(beverages)
+tab2, tab3 = st.tabs(["Tables", "Solution"])
+
+with tab2:
+    exercise_tables = ast.literal_eval(exercise.loc[0, "tables"])
+    for table in exercise_tables:
+        st.write(f"table: {table}")
+        df_table = con.execute(f"SELECT * FROM '{table}'").df()
+        st.dataframe(df_table)
+
 #    st.write("table: food_items")
 #    st.dataframe(food_items)
 #    st.write("expected :")
 #    st.dataframe(solution_df)
 #
-# with tab3:
-#    st.write(answer_str)
+with tab3:
+    exercise_name = exercise.loc[0, "exercise_name"]
+    with open(f"answers/{exercise_name}.sql", "r") as f:
+        answer = f.read()
+    st.write(answer)
